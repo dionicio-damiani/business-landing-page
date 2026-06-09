@@ -9,6 +9,7 @@ A production-ready, fully responsive landing page template for service businesse
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python&logoColor=white)
 
 🔗 **Live demo:** https://business-landing-page-production.up.railway.app
+![preview](app/static/img/og-cover.gif)
 ---
 
 ## Features
