@@ -1,4 +1,4 @@
-# Business Landing Page Template
+# Luminary Studio
 
 A production-ready, fully responsive landing page template for service businesses — built with pure HTML/CSS/JS and a FastAPI backend. Ships with **Luminary Studio** as demo content (fictional interior design studio).
 
@@ -9,7 +9,7 @@ A production-ready, fully responsive landing page template for service businesse
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat&logo=python&logoColor=white)
 [![Tests](https://github.com/dionicio-damiani/business-landing-page/actions/workflows/tests.yml/badge.svg)](https://github.com/dionicio-damiani/business-landing-page/actions/workflows/tests.yml)
 
-🔗 **Live demo:** https://business-landing-page-production.up.railway.app
+🔗 **Live demo:** https://luminary-studio.up.railway.app
 ![preview](static/img/og-cover.gif)
 ---
 
