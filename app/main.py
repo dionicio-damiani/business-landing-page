@@ -4,6 +4,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+import resend
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,8 +14,10 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
-from app.messages import CONTACT_SUCCESS, VALIDATION
+from app.messages import CONTACT_ERROR, CONTACT_SUCCESS, VALIDATION
 from app.schemas import ContactForm
+
+load_dotenv()
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
@@ -21,7 +25,10 @@ logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent.parent
 SITE_URL = os.getenv("SITE_URL", "").rstrip("/")
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-RECIPIENT_EMAIL = os.getenv("RECIPIENT_EMAIL", "hello@luminarystudio.com")
+CONTACT_EMAIL = os.getenv("CONTACT_EMAIL", "hello@luminarystudio.com")
+
+if RESEND_API_KEY:
+    resend.api_key = RESEND_API_KEY
 
 limiter = Limiter(key_func=get_remote_address)
 
@@ -106,16 +113,15 @@ async def index(request: Request):
     )
 
 
-async def _send_email(form: ContactForm) -> None:
+async def _send_email(form: ContactForm) -> bool:
+    """Send the contact form notification via Resend. Returns True on success."""
     if not RESEND_API_KEY:
         logger.info("Contact form [no email key] — %s <%s>: %s", form.name, form.email, form.subject)
-        return
+        return True
     try:
-        import resend  # installed via requirements.txt
-        resend.api_key = RESEND_API_KEY
         resend.Emails.send({
             "from": "Luminary Studio <onboarding@resend.dev>",
-            "to": RECIPIENT_EMAIL,
+            "to": CONTACT_EMAIL,
             "reply_to": form.email,
             "subject": f"New inquiry from {form.name}: {form.subject}",
             "html": (
@@ -128,14 +134,23 @@ async def _send_email(form: ContactForm) -> None:
             ),
         })
         logger.info("Email sent for contact from %s <%s>", form.name, form.email)
-    except Exception as exc:
-        logger.error("Email send failed: %s", exc)
+        return True
+    except resend.exceptions.ResendError as exc:
+        logger.error("Resend API error (%s, %s): %s", exc.code, exc.error_type, exc)
+        return False
+    except Exception:
+        logger.exception("Unexpected error sending contact email")
+        return False
 
 
 @app.post("/api/contact")
 @limiter.limit("5/minute")
 async def contact(request: Request, form: ContactForm):
-    await _send_email(form)
+    if not await _send_email(form):
+        return JSONResponse(
+            status_code=502,
+            content={"success": False, "message": CONTACT_ERROR},
+        )
     return JSONResponse(
         status_code=200,
         content={"success": True, "message": CONTACT_SUCCESS.format(name=form.name)},

@@ -8,3 +8,4 @@ VALIDATION = {
 }
 
 CONTACT_SUCCESS = "Thank you, {name}. We'll get back to you within 24 hours."
+CONTACT_ERROR = "Sorry, we couldn't send your message right now. Please try again later."
