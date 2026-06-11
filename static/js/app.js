@@ -40,6 +40,30 @@ function onScroll() {
 window.addEventListener('scroll', onScroll, { passive: true });
 onScroll();
 
+// ── HERO SCROLL HINT FADE-OUT ─────────────────────────────
+const scrollHint = document.querySelector('.hero-scroll-hint');
+const SCROLL_HINT_FADE_DISTANCE = 150;
+
+if (scrollHint) {
+  let scrollHintTicking = false;
+
+  function updateScrollHint() {
+    const progress = Math.min(window.scrollY / SCROLL_HINT_FADE_DISTANCE, 1);
+    scrollHint.style.opacity = String(1 - progress);
+    scrollHint.classList.toggle('is-hidden', progress >= 1);
+    scrollHintTicking = false;
+  }
+
+  window.addEventListener('scroll', () => {
+    if (!scrollHintTicking) {
+      requestAnimationFrame(updateScrollHint);
+      scrollHintTicking = true;
+    }
+  }, { passive: true });
+
+  updateScrollHint();
+}
+
 // ── MOBILE MENU ───────────────────────────────────────────
 const hamburger = document.getElementById('hamburger');
 const mobileMenu = document.getElementById('mobileMenu');

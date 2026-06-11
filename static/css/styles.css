@@ -481,6 +481,12 @@ button { cursor: pointer; border: none; background: none; font: inherit; }
   text-transform: uppercase;
   color: var(--text-dimmer);
   z-index: 1;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.hero-scroll-hint.is-hidden {
+  pointer-events: none;
 }
 
 .scroll-line {
